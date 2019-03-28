@@ -32,7 +32,7 @@ exports.up = function(knex, Promise) {
     })
     .createTable("instructions", tbl => {
       tbl.increments();
-      tbl.string("steps", 5000).notNullable();
+      tbl.string("steps", 255).notNullable();
     })
     .createTable("recipe_ingredients", tbl => {
       tbl.increments();
