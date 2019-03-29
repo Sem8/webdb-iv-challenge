@@ -1,9 +1,6 @@
-
 exports.seed = function(knex, Promise) {
   // Deletes ALL existing entries
-  return knex('instructions').insert([
-    { steps: '1. cook meat, 2. Add sliced onions' },
-
+  return knex("recipe_ingredients").insert([
+    { recipe_id: 1, ingredient_id: 1, amount: 2 }
   ]);
-   
 };

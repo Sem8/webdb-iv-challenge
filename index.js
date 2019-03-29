@@ -2,6 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 
 const dishRouter = require('./routers/dishes-router');
+const recipeRouter = require('./routers/recipes-router');
 
 const server = express();
 
@@ -15,6 +16,7 @@ server.get('/', (req, res) => {
 });
 
 server.use('/api/dishes', dishRouter);
+server.use('/api/recipes', recipeRouter);
 
 
 const port = process.env.PORT || 5000;

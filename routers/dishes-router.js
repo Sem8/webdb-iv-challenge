@@ -1,67 +1,48 @@
 const dishRouter = require('express').Router();
 const knex = require('knex');
 
-const knexConfig = {
-    client: "sqlite3",
-    useNullAsDefault: true,
-    connection: {
-        filename: "./data/recipeDish.sqlite3"
-    }
-};
+const dishdb = require('../data/dbConfig');
+const Dishes = require('../helpers/dishes-model.js');
 
-const dishdb = knex(knexConfig);
 
-// dishRouter.get('/', (req, res) => {
-    
-//     res.send('get all dishes data here');
-// })
-
-dishRouter.get("/", (req, res) => {
-    dishdb("dishes")
-      .then(dishdb => {
-        res.status(200).json(dishdb);
+  dishRouter.get("/", (req, res) => {
+    Dishes.getDishes()
+      .then(dishes => {
+        res.status(200).json(dishes);
       })
       .catch(error => {
         res.status(500).json({
           message: `The dishes information could not be retrieved: ${error}`
         });
-      });
-    // res.send('get all cohort data here');
+      });    
   });
   
-  dishRouter.get("/:id", (req, res) => {
-    const { id } = req.params;
-  
-    dishdb("dishes")
-      .where({ id })
-      .first()
-      .then(cohort => {
-        res.status(200).json(cohort);
+    dishRouter.get("/:id", (req, res) => {
+      
+    Dishes.getDish(req.params.id)
+      .then(dish => {
+        res.status(200).json(dish);
       })
       .catch(error => {
         res
           .status(500)
-          .json({ message: `Error occurred while retrieving cohort: ${error}` });
+          .json({ message: `Error occurred while retrieving dish: ${error}` });
       });
   });
   
-  dishRouter.post("/", (req, res) => {
-    dishdb("dishes")
-      .insert(req.body)
-      .then(ids => {
-        const id = ids[0];
-        dishdb("dishdb")
-          .where({ id })
-          .first()
-          .then(cohort => {
-            res.status(201).json(cohort);
-          });
-      })
-      .catch(error => {
-        res
-          .status(500)
-          .json({ message: `A new cohort couldn't be made: ${error}` });
-      });
+ dishRouter.post("/", async (req, res) => {
+    const { name } = req.body;
+    if(!name ) {
+      res.status(400).json({ message: 'Bad request, submit name of new dish'});
+    } else {
+      try {
+        const { id } = await Dishes.addDish(req.body);
+        const newDish = await Dishes.find(id);
+        res.status(201).json(newDish);
+      } catch (error) {
+        res.status(500).json({ error: `Error occurred while creating dish: ${error}`});
+      }
+    }
   });
   
   dishRouter.put("/:id", (req, res) => {
@@ -72,13 +53,13 @@ dishRouter.get("/", (req, res) => {
         if (count > 0) {
           res.status(200).json(count);
         } else {
-          res.status(404).json({ message: "Cohort does not exist" });
+          res.status(404).json({ message: "dish does not exist" });
         }
       })
       .catch(error => {
         res
           .status(500)
-          .json({ message: `Error occurred while updating cohort: ${error}` });
+          .json({ message: `Error occurred while updating dish: ${error}` });
       });
   });
   
@@ -90,17 +71,17 @@ dishRouter.get("/", (req, res) => {
       if (count > 0) {
         res.status(204).end();
       } else {
-        res.status(404).json({ message: "Cohort not found" });
+        res.status(404).json({ message: "dish not found" });
       }
     } catch (error) {
-      res.status(500).json({ error: `Error occurred while deleting cohort: ${error}` });
+      res.status(500).json({ error: `Error occurred while deleting dish: ${error}` });
     }
   });
   
-  dishRouter.get("/:id/students", async (req, res) => {
+  dishRouter.get("/:id/recipes", async (req, res) => {
     try {
       const students = await dishdb("recipes").where({
-        cohort_id: req.params.id
+        dish_id: req.params.id
       });
       res.status(200).json(students);
     } catch (error) {
